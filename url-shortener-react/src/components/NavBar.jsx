@@ -4,83 +4,110 @@ import { IoIosMenu } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
 import { useStoreContext } from "../contextApi/ContextApi";
 
-
 const Navbar = () => {
   const navigate = useNavigate();
   const { token, setToken } = useStoreContext();
   const path = useLocation().pathname;
   const [navbarOpen, setNavbarOpen] = useState(false);
 
+  const closeMenu = () => setNavbarOpen(false);
+
   const onLogOutHandler = () => {
-    setToken(null);
-    localStorage.removeItem("JWT_TOKEN");
+    setToken(null); // ✅ context handles localStorage
     navigate("/login");
+    closeMenu();
   };
 
   return (
-    <div className="h-16 bg-custom-gradient  z-50 flex items-center sticky top-0 ">
-      <div className="lg:px-14 sm:px-8 px-4 w-full flex justify-between">
-        <Link to="/">
-          <h1 className="font-bold text-3xl text-white italic sm:mt-0 mt-2">
+    <div className="h-16 bg-custom-gradient z-50 flex items-center sticky top-0">
+      <div className="lg:px-14 sm:px-8 px-4 w-full flex justify-between items-center">
+
+        {/* LOGO */}
+        <Link to="/" onClick={closeMenu}>
+          <h1 className="font-bold text-3xl text-white italic">
             Linklytics
           </h1>
         </Link>
+
+        {/* NAV ITEMS */}
         <ul
-          className={`flex sm:gap-10 gap-4 sm:items-center sm:mt-1 sm:pt-0 pt-3 text-slate-800 sm:static absolute left-0 top-[62px] sm:shadow-none shadow-md ${
-            navbarOpen ? "h-fit sm:pb-0 pb-5" : "h-0 overflow-hidden"
-          }  transition-all duration-100 sm:h-fit sm:bg-none  bg-custom-gradient sm:w-fit w-full sm:flex-row flex-col px-4 sm:px-0`}
+          className={`flex sm:gap-10 gap-4 sm:items-center sm:static absolute left-0 top-[64px]
+          ${navbarOpen ? "h-fit pb-5" : "h-0 overflow-hidden"}
+          sm:h-fit bg-custom-gradient sm:bg-transparent w-full sm:w-auto flex-col sm:flex-row px-4 sm:px-0 transition-all`}
         >
-          <li className="hover:text-btnColor font-[500]  transition-all duration-150">
+          {/* HOME */}
+          <li>
             <Link
+              to="/"
+              onClick={closeMenu}
               className={`${
                 path === "/" ? "text-white font-semibold" : "text-gray-200"
               }`}
-              to="/"
             >
               Home
             </Link>
           </li>
-          <li className="hover:text-btnColor font-[500]  transition-all duration-150">
+
+          {/* ABOUT */}
+          <li>
             <Link
+              to="/about"
+              onClick={closeMenu}
               className={`${
                 path === "/about" ? "text-white font-semibold" : "text-gray-200"
               }`}
-              to="/about"
             >
               About
             </Link>
           </li>
-          {token && (
-            <li className="hover:text-btnColor font-[500]  transition-all duration-150">
-            <Link
-              className={`${
-                path === "/dashboard" ? "text-white font-semibold" : "text-gray-200"
-              }`}
-              to="/dashboard"
-            >
-              Dashboard
-            </Link>
-          </li>
-          )}
-          {!token && (
-            <Link to="/register">
-              <li className=" sm:ml-0 -ml-1 bg-rose-700 text-white  cursor-pointer w-24 text-center font-semibold px-2 py-2 rounded-md  hover:text-slate-300   transition-all duration-150">
-                SignUp
-              </li>
-            </Link>
-            )}
 
+          {/* DASHBOARD */}
           {token && (
-            <button
-             onClick={onLogOutHandler}
-             className="sm:ml-0 -ml-1 bg-rose-700 text-white  cursor-pointer w-24 text-center font-semibold px-2 py-2 rounded-md  hover:text-slate-300   transition-all duration-150">
-              LogOut
-            </button>
-            )}
+            <li>
+              <Link
+                to="/dashboard"
+                onClick={closeMenu}
+                className={`${
+                  path === "/dashboard"
+                    ? "text-white font-semibold"
+                    : "text-gray-200"
+                }`}
+              >
+                Dashboard
+              </Link>
+            </li>
+          )}
+
+          {/* SIGNUP */}
+          {!token && (
+            <li>
+              <Link
+                to="/register"
+                onClick={closeMenu}
+                className="bg-rose-700 text-white w-24 text-center font-semibold px-2 py-2 rounded-md hover:text-slate-300"
+              >
+                SignUp
+              </Link>
+            </li>
+          )}
+
+          {/* LOGOUT */}
+          {token && (
+            <li>
+              <button
+                onClick={onLogOutHandler}
+                className="bg-rose-700 text-white w-24 text-center font-semibold px-2 py-2 rounded-md hover:text-slate-300"
+              >
+                Logout
+              </button>
+            </li>
+          )}
         </ul>
+
+        {/* MOBILE TOGGLE */}
         <button
           onClick={() => setNavbarOpen(!navbarOpen)}
-          className="sm:hidden flex items-center sm:mt-0 mt-2"
+          className="sm:hidden"
         >
           {navbarOpen ? (
             <RxCross2 className="text-white text-3xl" />
@@ -88,6 +115,7 @@ const Navbar = () => {
             <IoIosMenu className="text-white text-3xl" />
           )}
         </button>
+
       </div>
     </div>
   );

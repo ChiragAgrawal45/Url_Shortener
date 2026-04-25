@@ -7,7 +7,6 @@ import {
   LinearScale,
   Legend,
   Tooltip,
-  Filler,
 } from "chart.js";
 
 ChartJS.register(
@@ -15,90 +14,47 @@ ChartJS.register(
   Tooltip,
   CategoryScale,
   LinearScale,
-  Legend,
-  Filler
+  Legend
 );
 
-const Graph = ({ graphData }) => {
-  const labels = graphData?.map((item, i) => `${item.clickDate}`);
-  const userPerDaya = graphData?.map((item) => item.count);
+const Graph = ({ graphData = [] }) => {
+
+  // ✅ prevent crash if no data
+  if (!graphData || graphData.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-40 text-gray-500">
+        No analytics data available
+      </div>
+    );
+  }
+
+  const labels = graphData.map((item) => item.clickDate);
+  const values = graphData.map((item) => item.count);
 
   const data = {
-    labels:
-     graphData.length > 0
-        ? labels
-        : ["", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+    labels,
     datasets: [
       {
         label: "Total Clicks",
-        data:
-         graphData.length > 0
-            ? userPerDaya
-            : [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1],
-        backgroundColor:
-         graphData.length > 0 ? "#3b82f6" : "rgba(54, 162, 235, 0.1)",
-        borderColor: "#1D2327",
-        pointBorderColor: "red",
-        fill: true,
-        tension: 0.4,
-        barThickness: 20,
-        categoryPercentage: 1.5,
-        barPercentage: 1.5,
+        data: values,
+        backgroundColor: "#3b82f6",
       },
     ],
   };
 
   const options = {
-    maintainAspectRatio: false,
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: true,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          // stepSize: 1,
-          callback: function (value) {
-            if (Number.isInteger(value)) {
-              return value.toString();
-            }
-            return "";
-          },
-        },
-        title: {
-          display: true,
-          text: "Number Of Clicks",
-          font: {
-            family: "Arial",
-            size: 16,
-            weight: "bold",
-            color: "#FF0000",
-          },
-        },
-      },
-      x: {
-        beginAtZero: true,
-        // ticks: {
-        //   stepSize: 1,
-        // },
-        title: {
-          display: true,
-          text: "Date",
-          font: {
-            family: "Arial",
-            size: 16,
-            weight: "bold",
-            color: "#FF0000",
-          },
-        },
-      },
+      legend: { display: true },
     },
   };
 
-  return <Bar className=" w-full" data={data} options={options}></Bar>;
+  return (
+    <div style={{ height: "300px" }}>
+      <Bar data={data} options={options} />
+    </div>
+  );
 };
 
 export default Graph;

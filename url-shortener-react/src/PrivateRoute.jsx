@@ -1,12 +1,19 @@
 import { Navigate } from "react-router-dom";
 import { useStoreContext } from "./contextApi/ContextApi";
 
-export default function PrivateRoute({ children, publicPage}) {
-    const { token } = useStoreContext();
+export default function PrivateRoute({ children, publicPage }) {
+  const context = useStoreContext();
 
-    if (publicPage) {
-        return token ? <Navigate to="/dashboard" /> : children;
-    }
+  // ✅ safety check (prevents crash if context is undefined)
+  if (!context) return null;
 
-    return !token ? <Navigate to="/login" /> : children;
+  const { token } = context;
+
+  // ✅ Public routes (login/register)
+  if (publicPage) {
+    return token ? <Navigate to="/dashboard" replace /> : children;
+  }
+
+  // ✅ Private routes (dashboard, create, etc.)
+  return token ? children : <Navigate to="/login" replace />;
 }
