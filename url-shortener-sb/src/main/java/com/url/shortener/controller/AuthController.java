@@ -6,10 +6,7 @@ import com.url.shortener.models.User;
 import com.url.shortener.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -18,19 +15,24 @@ public class AuthController {
 
     private UserService userService;
 
-    @PostMapping("/public/login")
-    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest){
-        return ResponseEntity.ok(userService.authenticateUser(loginRequest));
+    @PostMapping("/public/register")
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
+
+        System.out.println("📥 Register API HIT");
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole("ROLE_USER");
+
+        User savedUser = userService.registerUser(user);
+
+        return ResponseEntity.ok(savedUser);
     }
 
-    @PostMapping("/public/register")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest){
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setPassword(registerRequest.getPassword());
-        user.setEmail(registerRequest.getEmail());
-        user.setRole("ROLE_USER");
-        userService.registerUser(user);
-        return ResponseEntity.ok("User registered successfully");
+    @PostMapping("/public/login")
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(userService.authenticateUser(request));
     }
 }

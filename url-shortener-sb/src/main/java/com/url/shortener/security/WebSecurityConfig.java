@@ -30,18 +30,21 @@ import java.util.List;
 @AllArgsConstructor
 public class WebSecurityConfig {
 
-    private UserDetailsServiceImpl userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
 
+    // ✅ JWT FILTER
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
     }
 
+    // ✅ PASSWORD ENCODER
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // ✅ AUTH MANAGER
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration
@@ -49,6 +52,7 @@ public class WebSecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+    // ✅ AUTH PROVIDER
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -57,12 +61,14 @@ public class WebSecurityConfig {
         return provider;
     }
 
-    // ✅ MOST IMPORTANT CORS CONFIG
+    // ✅ CORS CONFIG (FIXED FOR DEPLOYMENT)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        // 🔥 IMPORTANT FIX (allow all for now)
+        config.setAllowedOriginPatterns(List.of("*"));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -73,22 +79,39 @@ public class WebSecurityConfig {
         return source;
     }
 
+    // ✅ MAIN SECURITY CONFIG
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ KEY FIX
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // ✅ Enable CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // ✅ Stateless session (JWT)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // ✅ Authorization rules
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // 🔥 PUBLIC APIs (VERY IMPORTANT)
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/{shortUrl}").permitAll()
+
+                        // 🔐 PROTECTED APIs
                         .requestMatchers("/api/urls/**").authenticated()
+
                         .anyRequest().authenticated()
                 );
 
+        // ✅ Attach auth provider
         http.authenticationProvider(authenticationProvider());
+
+        // ✅ Add JWT filter
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
